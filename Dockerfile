@@ -21,7 +21,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && echo 'Make sure we have a en_US.UTF-8 locale available' \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     #&& rm /usr/lib/python3.11/EXTERNALLY-MANAGED \
-    && pip3 --isolated --no-cache-dir --force-reinstall install psycopg2-binary six psutil \
+    && pip3 --isolated --no-cache-dir install psycopg2-binary six psutil \
     && pip3 --isolated --no-cache-dir install "patroni[kubernetes]==${PATRONI_VERSION}" \
     && PGHOME=/home/postgres \
     && mkdir -p $PGHOME \

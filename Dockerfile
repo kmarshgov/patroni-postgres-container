@@ -16,13 +16,17 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && set -x \
     && echo 'APT::Install-Recommends "0";\nAPT::Install-Suggests "0";' > /etc/apt/apt.conf.d/01norecommend \
     && apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-cache depends patroni | sed -n -e 's/.* Depends: \(python3-.\+\)$/\1/p' \
+            | grep -Ev '^python3-(sphinx|etcd|consul|kazoo|kubernetes)' \
+            | xargs apt-get install -y vim-tiny curl jq locales git python3-pip python3-wheel \
     && apt-get install -y curl jq locales git build-essential libpq-dev python3 python3-dev python3-pip python3-wheel python3-setuptools python3-virtualenv python3-pystache python3-requests patchutils binutils \
     && apt-get install -y postgresql-common libevent-2.1 libevent-pthreads-2.1 brotli libbrotli1 python3.6 python3-psycopg2 \
     && echo 'Make sure we have a en_US.UTF-8 locale available' \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
-    #&& rm /usr/lib/python3.11/EXTERNALLY-MANAGED \
-    && pip3 --isolated --no-cache-dir install psycopg2-binary six psutil \
-    && pip3 --isolated --no-cache-dir install "patroni[kubernetes]==${PATRONI_VERSION}" \
+    && pip3 install setuptools \
+    && pip3 install 'git+https://github.com/zalando/patroni.git#egg=patroni[kubernetes]' \
+#    && pip3 --isolated --no-cache-dir install "patroni[kubernetes]==${PATRONI_VERSION}" \
     && PGHOME=/home/postgres \
     && mkdir -p $PGHOME \
     && sed -i "s|/var/lib/postgresql.*|$PGHOME:/bin/bash|" /etc/passwd \

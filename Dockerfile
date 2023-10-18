@@ -21,12 +21,47 @@ RUN export DEBIAN_FRONTEND=noninteractive \
             | grep -Ev '^python3-(sphinx|etcd|consul|kazoo|kubernetes)' \
             | xargs apt-get install -y vim-tiny curl jq locales git python3-pip python3-wheel \
     && apt-get install -y curl jq locales git build-essential libpq-dev python3 python3-dev python3-pip python3-wheel python3-setuptools python3-virtualenv python3-pystache python3-requests patchutils binutils \
-    && apt-get install -y postgresql-common libevent-2.1 libevent-pthreads-2.1 brotli libbrotli1 python3.6 python3-psycopg2 \
+    && apt-get install -y postgresql-common libevent-2.1 libevent-pthreads-2.1 brotli libbrotli1 python3.6 python3-psycopg2 --fix-missing \
     && echo 'Make sure we have a en_US.UTF-8 locale available' \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
-    && pip3 install setuptools \
-    && pip3 install 'git+https://github.com/zalando/patroni.git#egg=patroni[kubernetes]' \
-#    && pip3 --isolated --no-cache-dir install "patroni[kubernetes]==${PATRONI_VERSION}" \
+        # Clean up all useless packages and some files
+    && apt-get purge -y --allow-remove-essential python3-pip gzip bzip2 util-linux e2fsprogs \
+                libmagic1 bsdmainutils login ncurses-bin libmagic-mgc e2fslibs bsdutils \
+                exim4-config gnupg-agent dirmngr \
+                git make \
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* \
+        /root/.cache \
+        /var/cache/debconf/* \
+        /etc/rc?.d \
+        /etc/systemd \
+        /docker-entrypoint* \
+        /sbin/pam* \
+        /sbin/swap* \
+        /sbin/unix* \
+        /usr/local/bin/gosu \
+        /usr/sbin/[acgipr]* \
+        /usr/sbin/*user* \
+        /usr/share/doc* \
+        /usr/share/man \
+        /usr/share/info \
+        /usr/share/i18n/locales/translit_hangul \
+        /usr/share/locale/?? \
+        /usr/share/locale/??_?? \
+        /usr/share/postgresql/*/man \
+        /usr/share/postgresql-common/pg_wrapper \
+        /usr/share/vim/vim80/doc \
+        /usr/share/vim/vim80/lang \
+        /usr/share/vim/vim80/tutor \
+#        /var/lib/dpkg/info/* \
+    && find /usr/bin -xtype l -delete \
+    && find /var/log -type f -exec truncate --size 0 {} \; \
+    && find /usr/lib/python3/dist-packages -name '*test*' | xargs rm -fr \
+    && find /lib/$(uname -m)-linux-gnu/security -type f ! -name pam_env.so ! -name pam_permit.so ! -name pam_unix.so -delete \
+    \
+    && pip3 --isolated --no-cache-dir install psycopg2-binary==2.8.6 six psutil \
+    && pip3 --isolated --no-cache-dir install "patroni[kubernetes]==${PATRONI_VERSION}" \
     && PGHOME=/home/postgres \
     && mkdir -p $PGHOME \
     && sed -i "s|/var/lib/postgresql.*|$PGHOME:/bin/bash|" /etc/passwd \

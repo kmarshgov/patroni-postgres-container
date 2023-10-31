@@ -12,12 +12,18 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && set -x \
     && echo 'APT::Install-Recommends "0";\nAPT::Install-Suggests "0";' > /etc/apt/apt.conf.d/01norecommend \
     && apt-get update -y \
-    && apt-get install -y curl jq locales git build-essential libpq-dev python3.7 python3.7-dev python3.7-venv python3.7-pip python3.7-setuptools python3.7-pystache python3.7-requests patchutils binutils software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt-get update -y \
-    && apt-get install -y python3.7-venv python3.7-distutils python3.7-psycopg2 \
+    && apt-get install -y curl jq locales git build-essential libpq-dev wget \
+    && apt-get install -y libevent-2.1 libevent-pthreads-2.1 brotli libbrotli1 \
     && echo 'Make sure we have a en_US.UTF-8 locale available' \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
+    && wget https://www.python.org/ftp/python/3.7.12/Python-3.7.12.tgz \
+    && tar xzf Python-3.7.12.tgz \
+    && cd Python-3.7.12 \
+    && ./configure --enable-optimizations \
+    && make -j4 \
+    && make altinstall \
+    && cd .. \
+    && rm -rf Python-3.7.12.tgz Python-3.7.12 \
     && pip3.7 install --no-cache-dir psycopg2-binary==2.8.6 six psutil \
     && pip3.7 install --no-cache-dir "patroni[kubernetes]==${PATRONI_VERSION}" \
     && PGHOME=/home/postgres \
@@ -28,12 +34,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && mkdir -p $PGHOME/pgdata/pgroot \
     && chgrp -R 0 $PGHOME \
     && chown -R postgres $PGHOME \
-    && chmod -R 775 $PGHOME \
-    && echo 'Cleaning up' \
-    && apt-get remove -y git build-essential python3.7-dev python3.7-distutils python3.7-pip python3.7-setuptools \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/* /root/.cache
+    && chmod -R 775 $PGHOME
 
 COPY contrib/root /
 

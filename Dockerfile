@@ -12,11 +12,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && set -x \
     && echo 'APT::Install-Recommends "0";\nAPT::Install-Suggests "0";' > /etc/apt/apt.conf.d/01norecommend \
     && apt-get update -y \
-    && apt-get install -y curl jq locales git build-essential libpq-dev wget \
+    && apt-get install -y curl jq locales git build-essential libpq-dev wget ca-certificates \
     && apt-get install -y libevent-2.1 libevent-pthreads-2.1 brotli libbrotli1 \
     && echo 'Make sure we have a en_US.UTF-8 locale available' \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
-    && wget https://www.python.org/ftp/python/3.7.12/Python-3.7.12.tgz \
+    && wget https://www.python.org/ftp/python/3.7.12/Python-3.7.12.tgz --no-check-certificate \
     && tar xzf Python-3.7.12.tgz \
     && cd Python-3.7.12 \
     && ./configure --enable-optimizations \

@@ -15,15 +15,16 @@ RUN printf 'APT::Install-Recommends "0";\nAPT::Install-Suggests "0";' > /etc/apt
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 
+
+VOLUME /home/postgres/pgdata
+USER postgres
+WORKDIR /home/postgres
+
 # Expose PostgreSQL and Patroni REST API ports.
 EXPOSE 5432 8008
 # Default environment variables.
 ENV PATRONI_SUPERUSER_USERNAME=postgres
 ENV PATRONI_REPLICATION_USERNAME=replication
 
-# User which should own Patroni and PostgreSQL processes.
-USER postgres
 
-COPY entrypoint.sh /
-
-ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+CMD ["/bin/bash", "/usr/bin/entrypoint.sh"]

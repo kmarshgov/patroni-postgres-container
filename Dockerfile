@@ -31,8 +31,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     # && apt-get autoremove -y \
     # && apt-get clean -y \
     # && rm -rf /var/lib/apt/lists/* /root/.cache
-RUN virtualenv --python=python3 venv && source venv/bin/activate && pip install pyyaml && python env/common_config/add_imagepullsecret.py
-RUN pip3 --isolated --no-cache-dir install psycopg2-binary==2.8.6 six psutil pyyaml
+#RUN virtualenv --python=python3 venv && source venv/bin/activate && pip install pyyaml && python env/common_config/add_imagepullsecret.py
+RUN pip3 install psycopg2-binary==2.8.6 
+RUN pip3 install six 
+RUN pip3 install psutil==2.0.0
+RUN pip3 install pyyaml==6.0.1
+
 COPY contrib/root /
 
 VOLUME /home/postgres/pgdata
